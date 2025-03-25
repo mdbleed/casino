@@ -1,0 +1,20 @@
+import "u.gw"
+
+/ the room creation form
+RF:(("room name" "name")
+    ("your name" "user"))
+RF:u.mktable@!/+{(disp;name):x;(disp;qq|<input type="text" name="$name">|)}'RF
+
+b:qq`
+  <h1>casino</h1>
+  <hr>
+  <h3>create a new room</h3>
+  <form method="post" action="/act/mkroom.gw">
+      <table>
+      $RF
+      </table>
+      <input type="submit" value="go">
+  </form>
+  `
+
+say u.page["index";b]

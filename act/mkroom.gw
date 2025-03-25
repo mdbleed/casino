@@ -1,0 +1,5 @@
+"" import "../u.gw"
+
+POST:!/+url.dec''("="\)'"&"\FORM
+
+say POST

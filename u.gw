@@ -1,0 +1,17 @@
+mktable:{[D]+/{[D|x](k;v):(x;D x);"<tr><td>$k</td><td>$v</td></tr>"}'!D}
+
+page:{[title;body]
+      qq`
+      <!DOCTYPE html>
+      <html>
+          <head>
+              <title>$title - badboy casino</title>
+              <meta charset="utf-8">
+          </head>
+          <body>
+          $body
+          </body>
+      </html>
+      `}
+
+FORM:read STDIN
