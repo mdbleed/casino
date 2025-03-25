@@ -22,6 +22,9 @@ fatal:{[db;err;goto]page["error: $err"
                          <p><a href="$goto">go back</a></p>
                          `]}
 
+ejson:{[msg]"" json !["status" "message"
+                      ("error";$msg)]}
+
 / does vec x have atom y?
 has:{#[x]>x?y}
 

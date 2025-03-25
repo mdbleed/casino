@@ -2,21 +2,33 @@
 
 db:sql.open "../casino.db"
 
-me:(whoami db) or :say fatal[db;"NOT LOGGED IN";"/"]
+/ blah blah blah
+me:(whoami db) or :say ejson "NOT LOGGED IN"
 rid:?[has[!GET;"id"]
-      GET"id" or :say fatal[db;"CANNOT FIND ROOM";"/"]
-      :say fatal[db;"ROOM NOT FOUND";"/"]]
-q:sql.qry[db;"select * from rooms where id = $rid"] or :say fatal[db;"CANNOT FIND ROOM";"/"]
+      GET"id" or :say ejson "CANNOT FIND ROOM"
+      :say ejson "ROOM NOT FOUND"]
+q:sql.qry[db;"select * from rooms where id = $rid"] or :say ejson "CANNOT FIND ROOM"
 R:*q
 
+/ now shit gets real
 rm:sql.open "../db/room${rid}.db"
 
-cards:sql.qry[rm;"select * from cards"] or :say fatal[db;"CANNOT SELECT CARDS";"/"]
-hand1:sql.qry[rm;"select * from hand1"] or :say fatal[db;"CANNOT SELECT HAND1";"/"]
-hand2:sql.qry[rm;"select * from hand2"] or :say fatal[db;"CANNOT SELECT HAND2";"/"]
+/ game state data
+game:*sql.qry[rm;"select * from game where id = 1"] or :say ejson "CANNOT SELECT GAME STATE"
 
-data:!["cards" "room" "hand1" "hand2"
-       (cards;  R;    hand1;  hand2)]
+/ are you player 1?
+p1:me["id"]~game["p1"]
 
-say "Content-Type: text/plain\n"
+/ select all cards from the various places on the board
+all:{[rm;T]sql.qry[rm;"select * from $T"] or ()}
+(cards;pool;hand1;hand2;score1;score2):a:all[rm]'"cards" "pool" "hand1" "hand2" "score1" "score2"
+
+/ verify we didn't lose or add any cards
+(52=len:#,/a) or :say ejson "$len cards in deck??"
+
+/ yay, everything OK
+data:!["status" "cards" "room" "pool" "game" "score1" "score2" "hand"
+       ("OK";   cards;  R;     pool;  game;  score1;  score2;  ?[p1;hand1;hand2])]
+
+say "Content-Type: application/json\n"
 say "" json data

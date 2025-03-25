@@ -2,40 +2,28 @@
 
 db:sql.open "casino.db"
 
-whoami:{[db]
-        c:!/+url.dec''("="\)'"&"\env "HTTP_COOKIE"
-        h:c"hash"
-        *sql.qry[db;"select * from players where hash = '$h'"]}
 room:{[db;id]*sql.qry[db;"select * from rooms where id = $id"]}
 
 me:(whoami db) or :say fatal[db;"NOT LOGGED IN";"/"]
-R:?[has[!GET;"id"]
-    room[db;GET"id"] or :say fatal[db;"CANNOT FIND ROOM";"/"]
-    :say fatal[db;"ROOM ID NOT PROVIDED";"/"]]
-rid:R@"id"
+usr:html.esc me "name"
 
-/ the room creation form
-RF:(("room name" "name")
-    ("your name" "user"))
+/ R:?[has[!GET;"id"]
+/     room[db;GET"id"] or :say fatal[db;"CANNOT FIND ROOM";"/"]
+/     :say fatal[db;"ROOM ID NOT PROVIDED";"/"]]
 
 suits:"&#9824;","&#9829;","&#9830;","&#9827;"
 
 b:qq`
-  <h1 id="heading">$R@"name"</h1>
+  <h1 id="heading"></h1>
   <hr>
-    <div class="hand" id="hand">
-        <label>Your Hand</label>
+    <div>
+        <h2 class="hand-label">$usr's hand</h2>
         <div class="hand" id="hand">
     </div>
 
-    <div class="pile" id="pile">
-        <label>Middle Pile</label>
+    <div class="pool" id="pool">
+        <label>pool</label>
     </div>
-
-    <pre>$me</pre>
-    <pre>$R</pre>
-
-    <span class="hidden" id="room">$rid</span>
   `
 
 say page["room";b]

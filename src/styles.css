@@ -18,10 +18,14 @@ body {
     background-color: white;
     cursor: pointer;
 }
+.card:hover {
+    background-color: #f0f0f0;
+    border-color: #333;
+}
 .hearts, .diamonds {
     color: red;
 }
-.hand, .pile {
+.hand, .pool {
     border: 2px solid black;
     padding: 10px;
     border-radius: 8px;
@@ -30,27 +34,32 @@ body {
 .hand {
     display: flex;
     justify-content: space-between;
-    width: 320px; /* Adjust based on your needs */
+    width: 360px; /* Adjust based on your needs */
     flex-wrap: wrap;
     text-align: center;
 }
-.hand label {
+.hand-label {
     width: 100%;
+    text-align: center;
     margin-bottom: 5px;
     font-weight: bold;
 }
-.pile {
+.pool {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
     text-align: center;
     min-height: 60px;
 }
-.pile label {
+.pool label {
     width: 100%;
     text-align: center;
     font-weight: bold;
     margin-bottom: 10px;
+}
+.pool.highlight {
+    border-color: blue;
+    background-color: lightblue;
 }
 .hidden {
 	opacity: 0;

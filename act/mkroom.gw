@@ -5,13 +5,14 @@ rt.seed now
 
 db:sql.open "../casino.db"
 
+/ parse the form and pull values
 POST:(!/+url.dec''("="\)'"&"\FORM) or :say fatal[db;"failed to parse form";"/"]
-
 (name;user):(sql.esc'POST@"name" "user") or :say fatal[db;"invalid form parameters";"/"]
 
 / make a random hash of chars
 hashU:url.enc hash:"c"$65+64?57
 
+/ set up room and user in the main database
 (rid;r):sql.exe[db;qq`
                    insert into rooms (name,mode,at)
                    values ('$name','trap',$now)
@@ -21,42 +22,55 @@ hashU:url.enc hash:"c"$65+64?57
                    values ('$user','$hash',$rid,$now)
                    `]
 
-/ generate 52 cards
-deck:0i?,/{x(,)'"H" "S" "C" "D"}'1+!13
+/ generate 52 cards, then shuffle them
+deck:0i?{[a;x]x,a@x}[a]'!#a:,/{x(,)'"H" "S" "C" "D"}'1+!13
 
+/ deal the hands
 p1:6#deck; deck:6_deck
 p2:6#deck; deck:6_deck
 
+/ create the room database
+room:sql.open f:"../db/room${rid}.db"
+run "touch",f
+
 / insert card x into table T
 inC:{[T;x]
-     (rank;suit):x
-     "insert into $T (rank, suit) values ($rank, '$suit');"}
+     (id;rank;suit):x
+     "insert into $T (id,rank,suit) values ($id,$rank,'$suit');"}
 
 / all cards in the deck
 Cs:"\n"/inC["cards"]'deck
 Cp1:"\n"/inC["hand1"]'p1
 Cp2:"\n"/inC["hand2"]'p2
 
-room:sql.open f:"../db/room${rid}.db"
-run "touch",f
+/ make a card table
+cardT:{[name]qq|
+             create table if not exists $name (
+                 id integer primary key autoincrement,
+                 rank integer not null,
+                 suit text not null
+             );
+             |}
+Ts:"\n"/cardT'"cards" "pool" "hand1" "score1" "hand2" "score2"
+
+/ exec all generated statements
 sql.exe[room;qq`
-             create table if not exists cards (
-                 id integer primary key autoincrement,
-                 rank integer not null,
-                 suit text not null
+             create table if not exists game (
+                 id integer primary key not null,
+                 status text not null,
+                 p1 integer not null,
+                 turn1 boolean not null
              );
-             create table if not exists hand1 (
-                 id integer primary key autoincrement,
-                 rank integer not null,
-                 suit text not null
-             );
-             create table if not exists hand2 (
-                 id integer primary key autoincrement,
-                 rank integer not null,
-                 suit text not null
-             );
+             insert into game (status,p1,turn1)
+             values ('need_player',$uid,true);
+
+             -- card tables
+             $Ts
+             -- insert into the deck
              $Cs
+             -- insert into hand1
              $Cp1
+             -- insert into hand2
              $Cp2
              `]
 
