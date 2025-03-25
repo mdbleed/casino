@@ -1,0 +1,22 @@
+"" import "../u.gw"
+
+db:sql.open "../casino.db"
+
+me:(whoami db) or :say fatal[db;"NOT LOGGED IN";"/"]
+rid:?[has[!GET;"id"]
+      GET"id" or :say fatal[db;"CANNOT FIND ROOM";"/"]
+      :say fatal[db;"ROOM NOT FOUND";"/"]]
+q:sql.qry[db;"select * from rooms where id = $rid"] or :say fatal[db;"CANNOT FIND ROOM";"/"]
+R:*q
+
+rm:sql.open "../db/room${rid}.db"
+
+cards:sql.qry[rm;"select * from cards"] or :say fatal[db;"CANNOT SELECT CARDS";"/"]
+hand1:sql.qry[rm;"select * from hand1"] or :say fatal[db;"CANNOT SELECT HAND1";"/"]
+hand2:sql.qry[rm;"select * from hand2"] or :say fatal[db;"CANNOT SELECT HAND2";"/"]
+
+data:!["cards" "room" "hand1" "hand2"
+       (cards;  R;    hand1;  hand2)]
+
+say "Content-Type: text/plain\n"
+say "" json data

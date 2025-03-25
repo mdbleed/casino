@@ -1,20 +1,41 @@
-import "u.gw"
+"" import "u.gw"
+
+db:sql.open "casino.db"
+
+whoami:{[db]
+        c:!/+url.dec''("="\)'"&"\env "HTTP_COOKIE"
+        h:c"hash"
+        *sql.qry[db;"select * from players where hash = '$h'"]}
+room:{[db;id]*sql.qry[db;"select * from rooms where id = $id"]}
+
+me:(whoami db) or :say fatal[db;"NOT LOGGED IN";"/"]
+R:?[has[!GET;"id"]
+    room[db;GET"id"] or :say fatal[db;"CANNOT FIND ROOM";"/"]
+    :say fatal[db;"ROOM ID NOT PROVIDED";"/"]]
+rid:R@"id"
 
 / the room creation form
 RF:(("room name" "name")
     ("your name" "user"))
-RF:u.mktable@!/+{(disp;name):x;(disp;qq|<input type="text" name="$name">|)}'RF
+
+suits:"&#9824;","&#9829;","&#9830;","&#9827;"
 
 b:qq`
-  <h1>casino</h1>
+  <h1 id="heading">$R@"name"</h1>
   <hr>
-  <h3>create a new room</h3>
-  <form method="post" action="/act/mkroom.gw">
-      <table>
-      $RF
-      </table>
-      <input type="submit" value="go">
-  </form>
+    <div class="hand" id="hand">
+        <label>Your Hand</label>
+        <div class="hand" id="hand">
+    </div>
+
+    <div class="pile" id="pile">
+        <label>Middle Pile</label>
+    </div>
+
+    <pre>$me</pre>
+    <pre>$R</pre>
+
+    <span class="hidden" id="room">$rid</span>
   `
 
-say u.page["index";b]
+say page["room";b]

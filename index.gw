@@ -1,9 +1,9 @@
-import "u.gw"
+"" import "u.gw"
 
 / the room creation form
 RF:(("room name" "name")
     ("your name" "user"))
-RF:u.mktable@!/+{(disp;name):x;(disp;qq|<input type="text" name="$name">|)}'RF
+RF:mktable@!/+{(disp;name):x;(disp;qq|<input type="text" name="$name">|)}'RF
 
 b:qq`
   <h1>casino</h1>
@@ -17,4 +17,4 @@ b:qq`
   </form>
   `
 
-say u.page["index";b]
+say page["index";b]

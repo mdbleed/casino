@@ -1,0 +1,57 @@
+body {
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+.card {
+    width: 40px;
+    height: 60px;
+    border: 1px solid #000;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em;
+    margin: 5px;
+    background-color: white;
+    cursor: pointer;
+}
+.hearts, .diamonds {
+    color: red;
+}
+.hand, .pile {
+    border: 2px solid black;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+.hand {
+    display: flex;
+    justify-content: space-between;
+    width: 320px; /* Adjust based on your needs */
+    flex-wrap: wrap;
+    text-align: center;
+}
+.hand label {
+    width: 100%;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+.pile {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    text-align: center;
+    min-height: 60px;
+}
+.pile label {
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+.hidden {
+	opacity: 0;
+}

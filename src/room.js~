@@ -1,0 +1,10 @@
+function moveCard(cardElement) {
+    // Get the pile element
+    const pile = document.getElementById('pile');
+
+    // Remove the card from the player's hand
+    cardElement.parentNode.removeChild(cardElement);
+
+    // Add the card to the pile
+    pile.appendChild(cardElement);
+}

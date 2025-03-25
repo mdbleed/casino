@@ -7,11 +7,28 @@ page:{[title;body]
           <head>
               <title>$title - badboy casino</title>
               <meta charset="utf-8">
+              <link rel="stylesheet" type="text/css" href="src/styles.css">
           </head>
           <body>
           $body
           </body>
+          <script src="/index.js"></script>
       </html>
       `}
 
+fatal:{[db;err;goto]page["error: $err"
+                         qq`
+                         <h1>error: $err</h1>
+                         <p><a href="$goto">go back</a></p>
+                         `]}
+
+/ does vec x have atom y?
+has:{#[x]>x?y}
+
+whoami:{[db]
+        c:!/+url.dec''("="\)'"&"\env "HTTP_COOKIE"
+        h:c"hash"
+        *sql.qry[db;"select * from players where hash = '$h'"]}
+
 FORM:read STDIN
+GET:(!/+("="\)'"&"\env "QUERY_STRING") or ()!()

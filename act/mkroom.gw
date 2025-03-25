@@ -1,5 +1,67 @@
 "" import "../u.gw"
 
-POST:!/+url.dec''("="\)'"&"\FORM
+now:util.now 0
+rt.seed now
 
-say POST
+db:sql.open "../casino.db"
+
+POST:(!/+url.dec''("="\)'"&"\FORM) or :say fatal[db;"failed to parse form";"/"]
+
+(name;user):(sql.esc'POST@"name" "user") or :say fatal[db;"invalid form parameters";"/"]
+
+/ make a random hash of chars
+hashU:url.enc hash:"c"$65+64?57
+
+(rid;r):sql.exe[db;qq`
+                   insert into rooms (name,mode,at)
+                   values ('$name','trap',$now)
+                   `]
+(uid;r):sql.exe[db;qq`
+                   insert into players (name,hash,room,at)
+                   values ('$user','$hash',$rid,$now)
+                   `]
+
+/ generate 52 cards
+deck:0i?,/{x(,)'"H" "S" "C" "D"}'1+!13
+
+p1:6#deck; deck:6_deck
+p2:6#deck; deck:6_deck
+
+/ insert card x into table T
+inC:{[T;x]
+     (rank;suit):x
+     "insert into $T (rank, suit) values ($rank, '$suit');"}
+
+/ all cards in the deck
+Cs:"\n"/inC["cards"]'deck
+Cp1:"\n"/inC["hand1"]'p1
+Cp2:"\n"/inC["hand2"]'p2
+
+room:sql.open f:"../db/room${rid}.db"
+run "touch",f
+sql.exe[room;qq`
+             create table if not exists cards (
+                 id integer primary key autoincrement,
+                 rank integer not null,
+                 suit text not null
+             );
+             create table if not exists hand1 (
+                 id integer primary key autoincrement,
+                 rank integer not null,
+                 suit text not null
+             );
+             create table if not exists hand2 (
+                 id integer primary key autoincrement,
+                 rank integer not null,
+                 suit text not null
+             );
+             $Cs
+             $Cp1
+             $Cp2
+             `]
+
+say "Set-Cookie: hash=$hashU; Path=/"
+say "Location: /room.gw?id=$rid\n"
+
+sql.cls db
+sql.cls room
