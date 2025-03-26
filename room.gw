@@ -15,6 +15,7 @@ suits:"&#9824;","&#9829;","&#9830;","&#9827;"
 
 b:qq`
   <h1 id="heading"></h1>
+  <span id="join"></span>
   <hr>
     <div>
         <h2 class="hand-label">$usr's hand</h2>

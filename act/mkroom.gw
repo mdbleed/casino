@@ -6,8 +6,8 @@ rt.seed now
 db:sql.open "../casino.db"
 
 / parse the form and pull values
-POST:(!/+url.dec''("="\)'"&"\FORM) or :say fatal[db;"failed to parse form";"/"]
-(name;user):(sql.esc'POST@"name" "user") or :say fatal[db;"invalid form parameters";"/"]
+POST:(!/+url.dec''("="\)'"&"\FORM) or :say fatal["failed to parse form";"/"]
+(name;user):(sql.esc'POST@"name" "user") or :say fatal["invalid form parameters";"/"]
 
 / make a random hash of chars
 hashU:url.enc hash:"c"$65+64?57

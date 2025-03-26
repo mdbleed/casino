@@ -11,16 +11,16 @@ page:{[title;body]
           </head>
           <body>
           $body
-          </body>
           <script src="/index.js"></script>
+	  </body>
       </html>
       `}
 
-fatal:{[db;err;goto]page["error: $err"
-                         qq`
-                         <h1>error: $err</h1>
-                         <p><a href="$goto">go back</a></p>
-                         `]}
+fatal:{[err;goto]page["error: $err"
+                      qq`
+                      <h1>error: $err</h1>
+                      <p><a href="$goto">go back</a></p>
+                      `]}
 
 ejson:{[msg]"" json !["status" "message"
                       ("error";$msg)]}

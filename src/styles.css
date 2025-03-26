@@ -6,8 +6,8 @@ body {
     padding: 20px;
 }
 .card {
-    width: 40px;
-    height: 60px;
+    width: 50px;
+    height: 75px;
     border: 1px solid #000;
     border-radius: 5px;
     display: flex;
@@ -34,7 +34,7 @@ body {
 .hand {
     display: flex;
     justify-content: space-between;
-    width: 360px; /* Adjust based on your needs */
+    width: 400px; /* Adjust based on your needs */
     flex-wrap: wrap;
     text-align: center;
 }
@@ -49,7 +49,7 @@ body {
     justify-content: center;
     flex-wrap: wrap;
     text-align: center;
-    min-height: 60px;
+    min-height: 120px;
 }
 .pool label {
     width: 100%;
@@ -58,8 +58,8 @@ body {
     margin-bottom: 10px;
 }
 .pool.highlight {
-    border-color: blue;
-    background-color: lightblue;
+    border-color: green;
+    background-color: lightgreen;
 }
 .hidden {
 	opacity: 0;

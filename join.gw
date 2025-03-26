@@ -1,0 +1,28 @@
+"" import "u.gw"
+
+has[!GET;"id"] or :say fatal["no room id provided";"/"]
+rid:("i"$GET "id") or :say fatal["id is not a number";"/"]
+
+db:sql.open "casino.db"
+
+R:*sql.qry[db;"select * from rooms where id = $rid"] or :say fatal["room not found";"/"]
+RN:R"name"
+
+/ the room creation form
+RF:(,("your name" "user"))
+RF:mktable@!/+{(disp;name):x;(disp;qq|<input type="text" name="$name">|)}'RF
+
+b:qq`
+  <h1>casino</h1>
+  <hr>
+  <h3>join $RN</h3>
+  <form method="post" action="/act/join.gw">
+      <table>
+      $RF
+      </table>
+      <input type="hidden" name="room" value="$rid">
+      <input type="submit" value="go">
+  </form>
+  `
+
+say page["index";b]

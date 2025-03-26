@@ -1,0 +1,28 @@
+"" import "../u.gw"
+
+/ blah blah blah
+db:sql.open "../casino.db"
+me:(whoami db) or :say ejson "not logged in"
+rm:(sql.open "../db/room"+$[me"room"]+".db") or :say ejson "couldn't open room"
+
+/ grab the game state
+game:*sql.qry[rm;"select * from game where id = 1"] or :say ejson "CANNOT SELECT GAME STATE"
+
+/ get the current turn and assert that we're allowed to play
+p1:me["id"]~game["p1"]
+(|/(p1&game"p1";~[p1]&~game"p1")) or :say ejson "NOT YOUR TURN"
+
+/ deconstruct the post json
+post:(json FORM) or :say ejson "post body contains invalid json"
+grab:{[P;x]?[has[!P;x];P x;0i]}
+(card;on):g:grab[post]'a:"card" "on"
+(|/n:0i~'g) and :say ejson "invalid post parameters: "+($a@&n)+" not found"
+
+/ parse the card id and make sure it's in our hand
+id:("i"$*1_"-"\card) or :say ejson "failed to get card id from $card"
+h:"hand"+$?[p1;1;2]
+q:sql.qry[rm;"select id from $h where id = $id"]
+
+data:!["status" "post" "me" "q"
+      ("OK";    post;  me;  q  )]
+say "" json data

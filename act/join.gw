@@ -1,0 +1,30 @@
+"" import "../u.gw"
+
+POST:!/+("="\)'"&"\FORM
+(&/![POST]has'"user" "room") or :say fatal["invalid form params";"/"]
+(user;rid):sql.esc'POST@"user" "room"
+
+now:util.now 0
+rt.seed now
+
+/ make a random hash of chars
+hashU:url.enc hash:"c"$65+64?57
+
+db:sql.open "../casino.db"
+rm:(sql.open "../db/room${rid}.db") or :say fatal["room not found";"/"]
+
+game:*sql.qry[rm;"select * from game where id = 1"] or :say fatal["cannot query game state";"/"]
+("need_player"~game"status") or :say fatal["game has already started";"/"]
+
+uid:*sql.exe[db;qq`
+                insert into players (name,hash,room,at)
+                values ('$user','$hash',$rid,$now)
+                `]
+sql.exe[rm;qq`
+           update game
+           set status = 'play'
+           where id = 1
+           `] or :say fatal["failed to update game status";"/"]
+
+say "Set-Cookie: hash=$hashU; Path=/"
+say "Location: /room.gw?id=$rid\n"
