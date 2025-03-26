@@ -1,0 +1,24 @@
+"" import "../u.gw"
+
+db:sql.open "../casino.db"
+
+/ blah blah blah
+me:(whoami db) or :say ejson "NOT LOGGED IN"
+rid:?[has[!GET;"id"]
+      GET"id" or :say ejson "CANNOT FIND ROOM"
+      :say ejson "ROOM NOT FOUND"]
+q:sql.qry[db;"select * from rooms where id = $rid"] or :say ejson "CANNOT FIND ROOM"
+R:*q
+
+/ now shit gets real
+rm:sql.open "../db/room${rid}.db"
+
+/ game state data
+game:*sql.qry[rm;"select * from game where id = 1"] or :say ejson "CANNOT SELECT GAME STATE"
+
+/ yay, everything OK
+data:!["status" "game_status"
+       ("OK";   game@"status")]
+
+say "Content-Type: application/json\n"
+say "" json data

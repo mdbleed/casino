@@ -7,6 +7,20 @@ console.log("Room ID:", id);
 const pool = document.getElementById('pool');
 const handDiv = document.getElementById('hand');
 
+function mkcard(jsonCard) {
+	let suit = suits[jsonCard.suit];
+	let rank = convertRank(jsonCard.rank);
+
+	let cardDiv = document.createElement("div");
+	cardDiv.className = `card ${suit.name}`;
+	cardDiv.id = `card-${jsonCard.id}`; // Ensure unique ID using card's ID
+	cardDiv.draggable = true; // Enable draggable
+	cardDiv.innerHTML = `${rank}${suit.sym}`;
+	cardDiv.addEventListener('dragstart', dragStart);
+
+	return cardDiv;
+}
+
 /* refresh the page content using /end/room.gw to get the room data
  * this is expensive for the server so only call when you need it */
 function refresh() {
@@ -32,24 +46,18 @@ function refresh() {
 				jsn.game["status"] === "need_player"
 				? `join link: <a href="${join}">http://casino.badboy.institute${join}</a>`
 				: "";
-	
+
+			/* clear the div so we can append to it */
+			handDiv.innerHTML = '';
+
 			/* 
 			 * set up the cards
 			 */
-			jsn.hand.forEach((cardData, index) => {
-				let suit = suits[cardData.suit];
-				let rank = convertRank(cardData.rank);
-	
-				let cardDiv = document.createElement("div");
-				cardDiv.className = `card ${suit.name}`;
-				cardDiv.id = `card-${cardData.id}`; // Ensure unique ID using card's ID
-				cardDiv.draggable = true; // Enable draggable
-				cardDiv.innerHTML = `${rank}${suit.sym}`;
-				cardDiv.addEventListener('dragstart', dragStart);
-				console.log('Created card:', cardDiv);
-				handDiv.appendChild(cardDiv);
+			jsn.hand.forEach((card, i) => handDiv.appendChild(mkcard(card)));
+			jsn.pool.forEach((stack, i) => {
+				stack.forEach((card, i) => pool.appendChild(mkcard(card)));
 			});
-	
+
 			pool.addEventListener('dragover', dragOver);
 			pool.addEventListener('dragenter', dragEnter);
 			pool.addEventListener('dragleave', dragLeave);
@@ -57,6 +65,23 @@ function refresh() {
 		})
 		.catch(err => {
 			console.error(`Error fetching room data: ${err}`);
+		});
+}
+
+/* check and update the last_status variable */
+function checkStatus() {
+	fetch(`/end/status.gw?id=${id}`)
+		.then(res => res.json())
+		.then(jsn => {
+			if (jsn["status"] === "error") throw Err(`${jsn.message}`);
+			let s = jsn.game_status;
+			if (last_status !== s) {
+				refresh();
+				last_status = s;
+			}
+		})
+		.catch(err => {
+			console.error(`Error fetching status: ${err}`);
 		});
 }
 
@@ -116,4 +141,7 @@ const suits = {
 	"D": { name: "diamonds", sym: "&#9826;" }
 };
 
+let last_status = 'need_player';
+
 refresh();
+setInterval(checkStatus, 5000);

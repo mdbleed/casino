@@ -21,10 +21,12 @@ p1:me["id"]~game["p1"]
 
 / select all cards from the various places on the board
 all:{[rm;T]sql.qry[rm;"select * from $T"] or ()}
-(cards;pool;hand1;hand2;score1;score2):a:all[rm]'"cards" "pool" "hand1" "hand2" "score1" "score2"
+(cards;hand1;hand2;score1;score2):piles:all[rm]'"cards" "hand1" "hand2" "score1" "score2"
+pool:rm{sql.qry[x;"select * from stack"+$y"id"]}'all[rm;"pool"]
 
 / verify we didn't lose or add any cards
-(52=len:#,/a) or :say ejson "$len cards in deck??"
+deck:piles,,/pool
+(52=len:#,/deck) or :say ejson "$len cards in deck??"
 
 / yay, everything OK
 data:!["status" "cards" "room" "pool" "game" "score1" "score2" "hand"

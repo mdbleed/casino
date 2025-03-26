@@ -15,7 +15,7 @@ hashU:url.enc hash:"c"$65+64?57
 / set up room and user in the main database
 (rid;r):sql.exe[db;qq`
                    insert into rooms (name,mode,at)
-                   values ('$name','trap',$now)
+                   values ('$name','casino',$now)
                    `]
 (uid;r):sql.exe[db;qq`
                    insert into players (name,hash,room,at)
@@ -51,7 +51,7 @@ cardT:{[name]qq|
                  suit text not null
              );
              |}
-Ts:"\n"/cardT'"cards" "pool" "hand1" "score1" "hand2" "score2"
+Ts:"\n"/cardT'"cards" "hand1" "score1" "hand2" "score2"
 
 / exec all generated statements
 sql.exe[room;qq`
@@ -63,6 +63,10 @@ sql.exe[room;qq`
              );
              insert into game (status,p1,turn1)
              values ('need_player',$uid,true);
+
+             create table if not exists pool (
+                 id integer primary key not null
+             );
 
              -- card tables
              $Ts
