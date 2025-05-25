@@ -1,0 +1,37 @@
+mktable:{[D]+/{[D|x](k;v):(x;D x);"<tr><td>$k</td><td>$v</td></tr>"}'!D}
+
+page:{[title;body]
+      qq`
+      <!DOCTYPE html>
+      <html>
+          <head>
+              <title>$title - badboy casino</title>
+              <meta charset="utf-8">
+              <link rel="stylesheet" type="text/css" href="src/styles.css">
+          </head>
+          <body>
+          $body
+          <script src="/index.js"></script>
+	  </body>
+      </html>
+      `}
+
+fatal:{[err;goto]page["error: $err"
+                      qq`
+                      <h1>error: $err</h1>
+                      <p><a href="$goto">go back</a></p>
+                      `]}
+
+ejson:{[msg]"" json !["status" "message"
+                      ("error";$msg)]}
+
+/ does vec x have atom y?
+has:{#[x]>x?y}
+
+whoami:{[db]
+        c:!/+url.dec''("="\)'"; "\env "HTTP_COOKIE"
+        h:c"hash"
+        *sql.qry[db;"select * from players where hash = '$h'"]}
+
+FORM:read STDIN
+GET:(!/+("="\)'"&"\env "QUERY_STRING") or ()!()

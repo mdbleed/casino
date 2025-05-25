@@ -1,0 +1,31 @@
+"" import "u.gw"
+
+db:sql.open "casino.db"
+
+room:{[db;id]*sql.qry[db;"select * from rooms where id = $id"]}
+
+me:(whoami db) or :say fatal["NOT LOGGED IN";"/"]
+usr:html.esc me "name"
+
+/ R:?[has[!GET;"id"]
+/     room[db;GET"id"] or :say fatal["CANNOT FIND ROOM";"/"]
+/     :say fatal[db;"ROOM ID NOT PROVIDED";"/"]]
+
+suits:"&#9824;","&#9829;","&#9830;","&#9827;"
+
+b:qq`
+  <h1 id="heading"></h1>
+  <span id="join"></span>
+  <div id="message"></div>
+  <hr>
+    <div>
+        <h2 class="hand-label">$usr's hand</h2>
+        <div class="hand" id="hand">
+    </div>
+
+    <div class="pool" id="pool">
+        <label>pool</label>
+    </div>
+  `
+
+say page["room";b]

@@ -1,0 +1,36 @@
+"" import "../u.gw"
+
+db:sql.open "../casino.db"
+
+/ blah blah blah
+me:(whoami db) or :say ejson "NOT LOGGED IN"
+rid:?[has[!GET;"id"]
+      GET"id" or :say ejson "CANNOT FIND ROOM"
+      :say ejson "ROOM NOT FOUND"]
+q:sql.qry[db;"select * from rooms where id = $rid"] or :say ejson "CANNOT FIND ROOM"
+R:*q
+
+/ now shit gets real
+rm:sql.open "../db/room${rid}.db"
+
+/ game state data
+game:*sql.qry[rm;"select * from game where id = 1"] or :say ejson "CANNOT SELECT GAME STATE"
+
+/ are you player 1?
+p1:me["id"]~game["p1"]
+
+/ select all cards from the various places on the board
+all:{[rm;T]sql.qry[rm;"select * from $T"] or ()}
+(cards;hand1;hand2;score1;score2):piles:all[rm]'"cards" "hand1" "hand2" "score1" "score2"
+pool:rm{sql.qry[x;"select * from stack"+$y"id"]}'all[rm;"pool"]
+
+/ verify we didn't lose or add any cards
+deck:piles,,/pool
+(52=len:#,/deck) or :say ejson "$len cards in deck??"
+
+/ yay, everything OK
+data:!["status" "cards" "room" "pool" "game" "score1" "score2" "hand"
+       ("OK";   cards;  R;     pool;  game;  score1;  score2;  ?[p1;hand1;hand2])]
+
+say "Content-Type: application/json\n"
+say "" json data

@@ -1,30 +1,28 @@
-"" import "../u.gw"
+"" import "u.gw"
 
-POST:!/+("="\)'"&"\FORM
-(&/![POST]has'"user" "room") or :say fatal["invalid form params";"/"]
-(user;rid):sql.esc'POST@"user" "room"
+has[!GET;"id"] or :say fatal["no room id provided";"/"]
+rid:("i"$GET "id") or :say fatal["id is not a number";"/"]
 
-now:util.now 0
-rt.seed now
+db:sql.open "casino.db"
 
-/ make a random hash of chars
-hashU:url.enc hash:"c"$65+64?57
+R:*sql.qry[db;"select * from rooms where id = $rid"] or :say fatal["room not found";"/"]
+RN:R"name"
 
-db:sql.open "../casino.db"
-rm:(sql.open "../db/room${rid}.db") or :say fatal["room not found";"/"]
+/ the room creation form
+RF:(,("your name" "user"))
+RF:mktable@!/+{(disp;name):x;(disp;qq|<input type="text" name="$name">|)}'RF
 
-game:*sql.qry[rm;"select * from game where id = 1"] or :say fatal["cannot query game state";"/"]
-("need_player"~game"status") or :say fatal["game has already started";"/"]
+b:qq`
+  <h1>casino</h1>
+  <hr>
+  <h3>join $RN</h3>
+  <form method="post" action="/act/join.gw">
+      <table>
+      $RF
+      </table>
+      <input type="hidden" name="room" value="$rid">
+      <input type="submit" value="go">
+  </form>
+  `
 
-uid:*sql.exe[db;qq`
-                insert into players (name,hash,room,at)
-                values ('$user','$hash',$rid,$now)
-                `]
-sql.exe[rm;qq`
-           update game
-           set status = 'play'
-           where id = 1
-           `] or :say fatal["failed to update game status";"/"]
-
-say "Set-Cookie: hash=$hashU; Path=/"
-say "Location: /room.gw?id=$rid\n"
+say page["index";b]

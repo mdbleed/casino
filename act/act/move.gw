@@ -1,0 +1,44 @@
+"" import "../u.gw"
+
+/ blah blah blah
+db:sql.open "../casino.db"
+me:(whoami db) or :say ejson "not logged in"
+rm:(sql.open "../db/room"+$[me"room"]+".db") or :say ejson "couldn't open room"
+
+/ grab the game state
+game:*sql.qry[rm;"select * from game where id = 1"] or :say ejson "CANNOT SELECT GAME STATE"
+
+/ get the current turn and assert that we're allowed to play
+p1:me["id"]~game["p1"]
+(|/(p1&game"p1";~[p1]&~game"p1")) or :say ejson "NOT YOUR TURN"
+
+/ deconstruct the post json
+post:(json FORM) or :say ejson "post body contains invalid json"
+grab:{[P;x]?[has[!P;x];P x;0i]}
+(card;on):g:grab[post]'a:"card" "on"
+(|/n:0i~'g) and :say ejson "invalid post parameters: "+($a@&n)+" not found"
+
+/ parse the card id and make sure it's in our hand
+id:("i"$*1_"-"\card) or :say ejson "failed to get card id from $card"
+h:"hand"+$?[p1;1;2]
+(1=#q:sql.qry[rm;"select * from $h where id = $id"]) or :say ejson "card not found"
+(rank;suit):*[q]@"rank" "suit"
+
+/ remove the card from hand and add an entry to the pool
+s:*sql.exe[rm;qq`
+              delete from $h where id = $id;
+              insert into pool default values;
+              `] or :say ejson "failed to remove card from hand"
+/ insert the card into the new stack table
+sql.exe[rm;qq`
+           create table if not exists stack$s (
+               id integer primary key autoincrement,
+               rank integer not null,
+               suit text not null
+           );
+           insert into stack$s (rank, suit) values ($rank, '$suit');
+           `] or :say ejson "failed to create stack table $s"
+
+data:![,"status"
+      (,"OK")]
+say "" json data
