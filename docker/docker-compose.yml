@@ -1,0 +1,9 @@
+services:
+  lighttpd:
+    container_name: casino
+    build:
+      dockerfile: Dockerfile
+      context: .
+    image: lighttpd:dev
+    ports:
+      - 80:80
