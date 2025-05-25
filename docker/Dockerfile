@@ -26,14 +26,11 @@ RUN CGO_ENABLED=1 go build
 RUN cp gw /usr/bin/gw
 
 COPY files/lighttpd/ /etc/lighttpd/
-COPY app/ /var/www/html/
+COPY ../ /var/www/html/
 WORKDIR /var/www/html
 RUN etc/chown-linux.sh
 RUN chown lighttpd:lighttpd /var/www
 RUN chown lighttpd:lighttpd /var/www/html
-
-#COPY k /usr/local/bin/k
-#RUN chmod +x /usr/local/bin/k
 
 EXPOSE 80/tcp
 
