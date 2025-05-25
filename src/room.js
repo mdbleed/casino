@@ -1,23 +1,19 @@
 console.log("room.js loaded");
 
-console.log("DOM fully loaded and parsed");
 const id = new URLSearchParams(window.location.search).get("id");
 console.log("Room ID:", id);
 
 const pool = document.getElementById('pool');
 const handDiv = document.getElementById('hand');
 
-function mkcard(jsonCard) {
+function mkcard(jsonCard, playable) {
 	let suit = suits[jsonCard.suit];
 	let rank = convertRank(jsonCard.rank);
-
 	let cardDiv = document.createElement("div");
-	cardDiv.className = `card ${suit.name}`;
+	let playableClass = playable ? "playable" : "";
+	cardDiv.className = `card ${suit.name} ${playableClass}`;
 	cardDiv.id = `card-${jsonCard.id}`; // Ensure unique ID using card's ID
-	cardDiv.draggable = true; // Enable draggable
 	cardDiv.innerHTML = `${rank}${suit.sym}`;
-	cardDiv.addEventListener('dragstart', dragStart);
-
 	return cardDiv;
 }
 
@@ -53,15 +49,59 @@ function refresh() {
 			/* 
 			 * set up the cards
 			 */
-			jsn.hand.forEach((card, i) => handDiv.appendChild(mkcard(card)));
+			jsn.hand.forEach((card, i) => handDiv.appendChild(mkcard(card, true)));
 			jsn.pool.forEach((stack, i) => {
-				stack.forEach((card, i) => pool.appendChild(mkcard(card)));
+				stack.forEach((card, i) => pool.appendChild(mkcard(card, false)));
 			});
 
-			pool.addEventListener('dragover', dragOver);
-			pool.addEventListener('dragenter', dragEnter);
-			pool.addEventListener('dragleave', dragLeave);
-			pool.addEventListener('drop', drop);
+			let playableCards = handDiv.querySelectorAll('.playable');
+			playableCards.forEach((card) => {
+				card.addEventListener('click', (e) => {
+					e.preventDefault();
+					let cardId = card.id;
+					console.log(`Card clicked: ${cardId}`);
+					// Show list of link with valid plays for this card (i.e. Add to pool is always ok)
+					//validmoves is a list of objects, with a action and a title
+					validMoves = [{ action: 'addtopool', title: 'Add to Pool' }];
+					// Check if the card can be played on any of the stacks, can play if cardrank is equal
+					jsn.pool.forEach((stack, i) => {
+						if (stack.length > 0) {
+							let topCard = stack[stack.length - 1];
+							if (card.rank === topCard.rank) {
+								validMoves.push({ action: 'addtostack', title: `Match with ${topCard}` });
+							}
+						}
+					});
+					let moveList = document.createElement('ul');
+					moveList.className = 'move-list';
+					validMoves.forEach((move) => {
+						let moveItem = document.createElement('li');
+						// Create a link for each valid move
+						let moveLink = document.createElement('a');
+						moveLink.href = '/act/move.gw?action=' + move.action + '&card=' + cardId;
+						moveLink.textContent = move.title;
+						moveLink.dataset.cardId = cardId; // Store the card ID in the link
+						moveItem.appendChild(moveLink);
+						moveList.appendChild(moveItem);
+					});
+					// Append the move list to the card
+					card.appendChild(moveList);
+					// Add event listener to each move item
+					moveList.addEventListener('click', (e) => {
+						e.preventDefault();
+						let move = e.target.textContent;
+						console.log(`Move selected: ${move}`);
+						// Perform the move using the playcard function
+						playcard(e);
+					});
+					// Hide the move list when clicking outside
+					document.addEventListener('click', (e) => {
+						if (!card.contains(e.target)) {
+							moveList.remove();
+						}
+					});
+				});
+			});
 		})
 		.catch(err => {
 			console.error(`Error fetching room data: ${err}`);
@@ -85,33 +125,22 @@ function checkStatus() {
 		});
 }
 
-function dragStart(e) {
-	e.dataTransfer.setData('text/plain', e.target.id);
-	setTimeout(() => {
-		e.target.classList.add('hidden'); // Visual feedback while dragging
-	}, 0);
-}
-
-function dragOver(e) {
-	e.preventDefault(); // Allows drop
-}
-
-function dragEnter(e) {
+function playcard(e) {
 	e.preventDefault();
-	pool.classList.add('highlight'); // Add highlight
-}
-
-function dragLeave() {
-	pool.classList.remove('highlight'); // Remove highlight
-}
-
-function drop(e) {
-	e.preventDefault();
-	const cardId = e.dataTransfer.getData('text/plain');
+	console.log(e);
+	const cardId = e.target.dataset.cardId; // Get the card ID from the clicked link
+	const action = e.target.href.split('action=')[1]; // Get the action from the link
+	console.log(`Action: ${action}`);
 	const card = document.getElementById(cardId);
-	pool.appendChild(card); // Move card to pool
-	card.classList.remove('hidden');
-	pool.classList.remove('highlight');
+	if (action === 'addtopool') {
+		pool.appendChild(card); // Move card to pool
+		card.classList.remove('hidden');
+		pool.classList.remove('highlight');	
+	} else if (action === 'addtostack') {
+		//addToStack(cardId);
+	} else {
+		console.error(`Unknown action: ${action}`);
+	}
 
 	fetch("/act/move.gw", {
 		method: "POST",
@@ -120,8 +149,13 @@ function drop(e) {
 			on: 'pool',
 		})
 	})
-		.then((res) => res.json())
-		.then((jsn) => console.log(jsn));
+	.then((res) => res.json())
+	.then((jsn) => console.log(jsn))
+	.then(() => {
+		//add message to div id "message" "Waiting for other player..."
+		let messageDiv = document.getElementById("message");
+		messageDiv.innerHTML = "Waiting for other player...";	
+	});
 }
 
 function convertRank(rank) {
@@ -145,3 +179,4 @@ let last_status = 'need_player';
 
 refresh();
 setInterval(checkStatus, 5000);
+
